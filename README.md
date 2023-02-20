@@ -1,20 +1,18 @@
 # Improved Cross Entropy Method
 
-This project has for objective to implement a variant of the Cross Entropy Method (CEM) and to compare its performance to the original method on a set of classical benchmarks reinforcement learning.
+This project aims at implementing a variant of the Cross Entropy Method (CEM) and comparing its performance relative to the original, based on a set of classical benchmarks for reinforcement learning.
 
-The cross-entropy method is a Monte Carlo method for optimization. It is applicable to both combinatorial and continuous problems, with either a static or noisy objective. It allows to find a vector
-parameters that optimize a cost function.
+The cross-entropy method is a Monte Carlo method for optimization. It is applicable to both combinatorial and continuous problems, with either a static or noisy objective. It allows to find a vector of parameters that optimizes a cost function.
 
 <img src="images/CEM.png" width="48%"/><img src="images/CEMi.png" width="49%"/>
 
-In the left figure, there is the usual cross-entropy method, the color evolves from indigo to red as the cost improves, the ellipses represents the succesive covariances matrices.
+The left figure is a run of the usual cross-entropy method, that optimizes a cost function incrementally for a fixed size population. The color evolves from indigo to red as the cost improves, while the ellipses represents the succesive covariances matrices of each generation.
 
-In the right figure, we can observe that, if we take the inverse of the covariance matrice, the main axis of the ellipses is aligned with the progression of the
-population. We can see that the optimum is reached faster than the usual cross-entropy method. 
+In the right figure, we use the inverse of the covariance matrix instead. Our first observation is that the main axis of the ellipses are aligned with the progression of the population, and that the optimum is reached way faster than the usual cross-entropy method. 
 
-So, we can hypothesise that the use the inverse of the covariance matrice is greater.
+Thus our hypothesis on a potential systematic improvement of the C.E.M. with the use  of the inverse of the covariance matrix.
 
-The purpose of this project is to determine if its true.
+The purpose of this project is to determine the realm within which the latter holds. 
 
 ## Quick Start
 
