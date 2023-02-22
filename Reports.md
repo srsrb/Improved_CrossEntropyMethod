@@ -1,4 +1,19 @@
 # Reports
+## February 21st 
+Bonjour,
+Après avoir remarqué que la CEM est plus performante que la iCEM (comme les graphes le montre), nous allons, en premier lieu, essayé d’appliquer notre code sur le notebook de Cross Enthropy methode à 2 dimensions afin de voir si tout marche bien et pour pouvoir visualiser le développement des ellipses.
+Dans le cas ou tout fonctionne bien sur 2 dimensions, nous allons testé sur des environnements à plusieurs dimensions de la façon suivante :
+- Extraire deux paramètres afin de les optimiser avec la CEM et iCEM.
+- Appliquer la CEM sur tous les paramètres en remplaçant à chaque fois avec les deux paramètres déjà optimisé ( Dans chaque génération).
+- Comparer les résultats des tests.
+Et comme le 15 mars c’est le dernier délai pour rendre le rapport, nous allons commencer la rédaction de ce rapport dés cette semaine .
+
+
+Condialement
+
+
+Anyes, Julien, Robin
+
 
 ## Report of the 14 february 2023
 
