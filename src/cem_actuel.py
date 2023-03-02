@@ -23,6 +23,11 @@ from bbrl.visu.visu_policies import plot_policy
 
 class CovMatrix:
     def __init__(self, centroid: torch.Tensor, sigma, noise_multiplier ,cfg ):
+        """
+        
+
+        cfg -> fichier de configuration utilise
+        """
         policy_dim = centroid.size()[0]
         self.policy_dim  = policy_dim
         self.noise = torch.diag(torch.ones(policy_dim) * sigma)
@@ -97,7 +102,7 @@ def run_cem(cfg, fonction_json):
     cmap = plt.cm.rainbow
     norm = matplotlib.colors.Normalize(vmin=1, vmax=cfg.algorithm.max_epochs)
 
-    make_plot = cfg.algorithm.make_plot
+    make_plot = cfg.make_plot
 
     colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "grey", "black"]
     # 1)  Build the  logger
@@ -116,6 +121,8 @@ def run_cem(cfg, fonction_json):
         title  = "CEM evolution"
     title  += (" - diagonal only" if cfg.algorithm.diag_covMatrix else "  - full matrix") +" :: " f"{cfg.algorithm.architecture.actor_hidden_size}"
     fig.suptitle(title)
+    
+    max_run_and_epoch  =  str(cfg.algorithm.nb_runs-1)+'.'+str(cfg.algorithm.max_epochs-1) 
 
     for run in range(cfg.algorithm.nb_runs):
         seed+=1
@@ -133,8 +140,10 @@ def run_cem(cfg, fonction_json):
         best_score = -np.inf
         nb_steps = 0
         scores_elites = [] #scores des elites a chaque epoch (generation)
+        
         for epoch in range(cfg.algorithm.max_epochs):
-            print(f'Simulating {run}.{epoch} \n')
+            
+            print(f'Simulating {run}.{epoch} /{max_run_and_epoch} ')
             matrix.update_noise()
             scores = []
             weights = matrix.generate_weights(centroid, pop_size )
@@ -158,7 +167,7 @@ def run_cem(cfg, fonction_json):
             elites_weights = [weights[k] for k in elites_idxs]
             #Concanetane the tensor of elites_weights
             elites_weights = torch.cat(
-                [torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
+                [w.clone().detach().unsqueeze(0) for w in elites_weights], dim=0 #[torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
             )
             scores_elites.append([scores[i] for i in elites_idxs])
             centroid = elites_weights.mean(0)
@@ -174,7 +183,7 @@ def run_cem(cfg, fonction_json):
                 Y  =  scores_elites_np[i,:]
                 X = [i for j in range(len(scores_elites_np[0]))]
 
-                fonction_json(Y) #ajoute les scores des elites au json
+                fonction_json(Y.tolist()) #ajoute les scores des elites au json
 
 
             if make_plot : 
@@ -196,14 +205,15 @@ def run_cem(cfg, fonction_json):
         axs[2].set_ylabel('Median Score of elites')
         axs[0].grid(False)
         plt.tight_layout()
-        name_file = "plot_output/plot_"+f"{cfg.gym_env.env_name}"+ ("_CEMI" if cfg.CEMi else "_CEM") + f"_R{cfg.algorithm.nb_runs}G{cfg.algorithm.max_epochs}Diag{cfg.algorithm.diag_covMatrix }.png"
-        os.makedirs('../plot_output/')
+        name_file = "plot_output/plot_"+f"{cfg.gym_env.env_name}"+ ("_CEMI" if cfg.CEMi else "_CEM") + f"_R{cfg.algorithm.nb_runs}G{cfg.algorithm.max_epochs}{'diagMat' if cfg.algorithm.diag_covMatrix else'fullMat'}.png"
+        os.makedirs('./plot_output/')
         plt.savefig(name_file)
+        print(f"Generated plot: '{name_file}' ")
 
 
 @hydra.main(
     config_path="./configs/",
-    config_name="cem_CartPole.yaml",
+    config_name="cem_caRTpole.yaml",
 )
 def main(cfg):
     import torch.multiprocessing as mp
