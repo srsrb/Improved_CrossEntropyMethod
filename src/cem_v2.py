@@ -71,7 +71,7 @@ class CovMatrix:
 
 
 # Create the PPO Agent
-def create_CEM_agent(cfg, env_agent):
+def create_CEM_agent(cfg, env_agent ,seed):
     obs_size, act_size = env_agent.get_obs_and_actions_sizes()
     if isinstance(env_agent.action_space , gym.spaces.Discrete):
         action_agent = DiscreteActor(
@@ -83,7 +83,8 @@ def create_CEM_agent(cfg, env_agent):
         )
     ev_agent = Agents(env_agent, action_agent)
     eval_agent = TemporalAgent(ev_agent)
-    eval_agent.seed(cfg.algorithm.seed)
+
+    eval_agent.seed(seed)
 
     return eval_agent
 
@@ -91,7 +92,95 @@ def create_CEM_agent(cfg, env_agent):
 def make_gym_env(env_name):
     env = gym.make(env_name)
     return env
+def run_2(cfg, run ,eval_agent ,centroid_2 , axs , colors, first_round=False) :
+        pop_size = cfg.algorithm.pop_size
+        make_plot = cfg.algorithm.make_plot
+        centroid = torch.nn.utils.parameters_to_vector(eval_agent.parameters())
+        matrix_2 = CovMatrix(
+            centroid,
+            cfg.algorithm.sigma,
+            cfg.algorithm.noise_multiplier,
+            cfg
+        )
+        weights_2 = matrix_2.generate_weights(centroid, pop_size )
+        c = centroid[2:]
+        if first_round :
+            centroid = centroid[:2]
+            print("les 2 premiers param sont : ", centroid)
+        else :
+            centroid = torch.cat((centroid_2, c), dim=0)
+        matrix = CovMatrix(
+            centroid,
+            cfg.algorithm.sigma,
+            cfg.algorithm.noise_multiplier,
+            cfg
+        )
+        best_score = -np.inf
+        nb_steps = 0
+        scores_elites = [] #scores des elites a chaque epoch (generation)
+        for epoch in range(cfg.algorithm.max_epochs):
+            print(f'Simulating {run}.{epoch} \n')
+            matrix.update_noise()
+            scores = []
+            weights = matrix.generate_weights(centroid , pop_size )
+            #generate pop_size generations
+            for i in range(pop_size):
+                workspace = Workspace()
+                if first_round :
+                    w = torch.cat((weights[i] , weights_2[i][2:]), dim=0)
+                else:    
+                    w = weights[i]
+                #on va concatener à W le reste des param (W_2)
+                torch.nn.utils.vector_to_parameters(w, eval_agent.parameters())
+                eval_agent(workspace, t=0, stop_variable="env/done")
+                action = workspace["action"]
+                nb_steps += action[0].shape[0]
+                #stock the reward of each step in rewards
+                rewards = workspace["env/cumulated_reward"][-1]
+                #calculate the mean of all rewards 
+                mean_reward = rewards.mean()
+                scores.append(mean_reward)
+            # Keep only best individuals to compute the new centroid
+            elites_idxs = np.argsort(scores)[-cfg.algorithm.elites_nb :]
+            if first_round :
+                elites_weights = [weights[k][:2] for k in elites_idxs]
+            else :
+                elites_weights = [weights[k] for k in elites_idxs]
+            #Concanetane the tensor of elites_weights
+            elites_weights = torch.cat(
+                [torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
+            )
+            scores_elites.append([scores[i] for i in elites_idxs])
+            m = elites_weights.mean(0)
+            if first_round :
+                centroid = m[:2]
+            else :
+                centroid = torch.cat((centroid_2, m[2:]), dim=0)
 
+            # Update covariance
+            matrix.update_noise()
+            #je dois prendre que les 2 premier param de chaque element de la liste eights dans elite weights pour faire les update
+            if cfg.CEMi and first_round :
+                matrix.update_covariance_inverse(elites_weights)
+            else:
+                matrix.update_covariance(elites_weights)
+
+            scores_elites_np = np.asarray(scores_elites)
+            if not first_round :
+                for i in range(len(scores_elites_np)):
+                    Y  =  scores_elites_np[i,:]
+                    X = [i for j in range(len(scores_elites_np[0]))]
+
+
+
+                if make_plot : 
+                    axs[0].scatter(X,Y, color=colors[run] , s=3)  
+                
+        if first_round :
+            print("les 2 premiers param optimisé sont : ", centroid)
+            return centroid 
+        else :
+            return scores_elites
 
 def run_cem(cfg, fonction_json):
     cmap = plt.cm.rainbow
@@ -125,74 +214,9 @@ def run_cem(cfg, fonction_json):
         torch.manual_seed(seed)
         eval_env_agent = create_no_reset_env_agent(cfg)
         
-        eval_agent = create_CEM_agent(cfg, eval_env_agent)
-        centroid = torch.nn.utils.parameters_to_vector(eval_agent.parameters())
-        #centroid_2 = centroid[:2]
-        #centroid = centroid[:2]
-        #avant la boucle je fais un appel à generate weight pour le diviser en 2 parties
-        matrix = CovMatrix(
-            #centroid_2
-            centroid,
-            cfg.algorithm.sigma,
-            cfg.algorithm.noise_multiplier,
-            cfg
-        )
-        best_score = -np.inf
-        nb_steps = 0
-        scores_elites = [] #scores des elites a chaque epoch (generation)
-        for epoch in range(cfg.algorithm.max_epochs):
-            print(f'Simulating {run}.{epoch} \n')
-            matrix.update_noise()
-            scores = []
-            #on remplace centroid par centroid + centroid_2
-            weights = matrix.generate_weights(centroid, pop_size )
-            c = []
-            c.append(centroid)
-            print("centroid : ", torch.cat((centroid[:2], centroid), dim=0))
-            print("centroid : ",centroid)
-            #print("weights : ",weights)
-            #generate pop_size generations
-            for i in range(pop_size):
-                workspace = Workspace()
-                w = weights[i]
-                #on va concatener à W le reste des param (W_2)
-                torch.nn.utils.vector_to_parameters(w, eval_agent.parameters())
-                eval_agent(workspace, t=0, stop_variable="env/done")
-                action = workspace["action"]
-                nb_steps += action[0].shape[0]
-                #stock the reward of each step in rewards
-                rewards = workspace["env/cumulated_reward"][-1]
-                #calculate the mean of all rewards 
-                mean_reward = rewards.mean()
-                logger.add_log("reward", mean_reward, nb_steps)
-                scores.append(mean_reward)
-            # Keep only best individuals to compute the new centroid
-            elites_idxs = np.argsort(scores)[-cfg.algorithm.elites_nb :]
-            elites_weights = [weights[k] for k in elites_idxs]
-            #Concanetane the tensor of elites_weights
-            elites_weights = torch.cat(
-                [torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
-            )
-            scores_elites.append([scores[i] for i in elites_idxs])
-            centroid = elites_weights.mean(0)
-            # Update covariance
-            matrix.update_noise()
-            if cfg.CEMi :
-                matrix.update_covariance_inverse(elites_weights)
-            else:
-                matrix.update_covariance(elites_weights)
-
-            scores_elites_np = np.asarray(scores_elites)
-            for i in range(len(scores_elites_np)):
-                Y  =  scores_elites_np[i,:]
-                X = [i for j in range(len(scores_elites_np[0]))]
-
-                fonction_json(Y) #ajoute les scores des elites au json
-
-
-            if make_plot : 
-                axs[0].scatter(X,Y, color=colors[run] , s=3)
-
+        eval_agent = create_CEM_agent(cfg, eval_env_agent , seed)
+        cendroid_2 = run_2(cfg,run,eval_agent , None , axs , colors , True )
+        scores_elites = run_2(cfg,run,eval_agent , cendroid_2 , axs , colors , False )
         X = [i for i in range(len(scores_elites))]
         meanY =  [np.mean(y) for y in scores_elites]
         medianY =  [np.median(y) for y in scores_elites]
@@ -222,7 +246,7 @@ def run_cem(cfg, fonction_json):
 
 @hydra.main(
     config_path="./configs/",
-    config_name="cem_CartPole.yaml",
+    config_name="cem_Pendulum.yaml",
 )
 def main(cfg):
     import torch.multiprocessing as mp
