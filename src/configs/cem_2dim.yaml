@@ -1,0 +1,31 @@
+      save_best: True
+      plot_agents: True
+      verbose: True
+      CEMi: True
+
+      logger:
+            classname: bbrl.utils.logger.TFLogger
+            log_dir: ./cem_logs/
+            verbose: False
+            every_n_seconds: 10
+
+      algorithm:
+            #score_function = [ "rastrigin" , "score_func" ,"ackley" , "goldstein_price" , "Three_hump_camel" , "easom"]
+            score_function : "goldstein_price"
+            centroid : [-10.0 , -10.0]
+            policy_dim : 2
+            seed: 1
+            nb_seeds: 1
+            sigma: 0.2
+            noise_multiplier: 0.999
+            pop_size: 30
+            elites_nb: 10
+            n_processes: 1
+            max_epochs: 40
+            nb_runs : 1
+            make_plot : True
+            diag_covMatrix  : False
+            
+      optimizer:
+            classname: torch.optim.Adam
+            lr: 0.001
