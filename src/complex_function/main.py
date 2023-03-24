@@ -24,8 +24,11 @@ def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
         function that takes a vector of `R^2` as an input an returns a real number
 
     folder_plots ="plots_"
+        The directory in which the plot will be generated and saved
     
     folder_analysis ="analysis_"
+        The directory in which the analysis will be generated and saved
+
 
     show_plot=False
         Show the plot generated for the execution
@@ -107,8 +110,10 @@ def plot_every_function(folder_plots = "plots_",folder_analysis ="analysis_" ,sh
     Parameters
     ---
      folder_plots ="plots_"
+        The directory in which the plots will be generated and saved
     
     folder_analysis ="analysis_"
+        The directory in which the analysis will be generated and saved
 
     show_plot=False
         Show the plot generated for the execution
