@@ -103,7 +103,6 @@ def CEM(test_function , EXPERIMENT, CEMi , centroid , seed , sigma , noise_multi
             # The params of policies at iteration t+1 are drawn according to a multivariate 
             # Gaussian whose center is centroid and whose shaoe is defined by cov
             weights = matrix.generate_weights(centroid, pop_size)
-            #print("weighths : ",weights)
 
             #generate pop_size generations
             for i in range(pop_size):
@@ -137,6 +136,8 @@ def CEM_combine(test_function , centroid , seed , sigma , noise_multiplier , max
         
         all_weights = []
         all_centroids= [centroid]
+        percentage_CEM = []
+        percentage_CEMir = []
         size = pop_size//2
         
         torch.manual_seed(seed) 
@@ -156,22 +157,30 @@ def CEM_combine(test_function , centroid , seed , sigma , noise_multiplier , max
             print(f'Simulating {epoch} \n',end='\r')
             sys.stdout.write("\033[F")
             # The scores are initialized
-            scores = np.zeros(2*size)
+            scores_CEM = np.zeros(size)
+            scores_CEMir = np.zeros(size)
             # The params of policies at iteration t+1 are drawn according to a multivariate 
             # Gaussian whose center is centroid and whose shaoe is defined by cov
             weights_CEM = matrix_CEM.generate_weights(centroid, size)
             
             weights_CEMir = matrix_CEMir.generate_weights(centroid, size)
-            
             weights = weights_CEM + weights_CEMir
             #generate pop_size generations
-            for i in range(2*size):
-                scores[i] = test_function(weights[i])
+            for i in range(size):
+                scores_CEM[i] = test_function(weights_CEM[i])
+            for i in range(size ):
+                scores_CEMir[i] = test_function(weights_CEMir[i])
             matrix_CEM.update_noise()
             matrix_CEMir.update_noise()
             # Keep only best individuals to compute the new centroid
+            scores = np.concatenate((scores_CEM,scores_CEMir), axis=0)
             elites_idxs = np.argsort(scores)[:elites_nb]
             elites_weights = [weights[k] for k in elites_idxs]
+            common_CEM = intersection(elites_weights , weights_CEM)
+            common_CEMir = intersection(elites_weights , weights_CEMir)
+
+            percentage_CEM.append((common_CEM * 100)/elites_nb)
+            percentage_CEMir.append((common_CEMir * 100)/elites_nb)
             elites_weights = torch.cat(
                 [torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
             )
@@ -183,6 +192,73 @@ def CEM_combine(test_function , centroid , seed , sigma , noise_multiplier , max
             all_centroids.append(centroid.detach().cpu().numpy())
             all_covs.append(matrix_CEM.get_cov().detach().cpu().numpy())
             all_covs.append(matrix_CEMir.get_cov().detach().cpu().numpy())
+        all_weights, all_centroids,all_covs , percentage_CEM , percentage_CEMir = np.array(all_weights),np.array(all_centroids),np.array(all_covs) , np.array(percentage_CEM) , np.array (percentage_CEMir)
+
+        return all_weights,all_centroids,all_covs, percentage_CEM , percentage_CEMir
+
+
+def CEM_combine_2(test_function , centroid , seed , sigma , noise_multiplier , max_epochs , pop_size , elites_nb ) :
+        """Returns:
+        (all_weights,all_centroids,all_covs)
+        """
+        
+        all_weights = []
+        all_centroids= [centroid]
+        size = pop_size//3
+        
+        torch.manual_seed(seed) 
+        centroid = torch.tensor(centroid)
+        matrix_CEM = CovMatrix(
+            centroid,
+            sigma,
+            noise_multiplier,
+        )
+        matrix_CEMir = CovMatrix(
+            centroid,
+            sigma,
+            noise_multiplier,
+        )
+        matrix_CEMi = CovMatrix(
+            centroid,
+            sigma,
+            noise_multiplier,
+        )
+        all_covs = [matrix_CEM.get_cov().detach().cpu().numpy()] + [matrix_CEMir.get_cov().detach().cpu().numpy()] + [matrix_CEMi.get_cov().detach().cpu().numpy()]
+        for epoch in range(max_epochs):
+            print(f'Simulating {epoch} \n',end='\r')
+            sys.stdout.write("\033[F")
+            # The scores are initialized
+            scores = np.zeros(3*size)
+            # The params of policies at iteration t+1 are drawn according to a multivariate 
+            # Gaussian whose center is centroid and whose shaoe is defined by cov
+            weights_CEM = matrix_CEM.generate_weights(centroid, size)
+            
+            weights_CEMir = matrix_CEMir.generate_weights(centroid, size)
+            weights_CEMi = matrix_CEMi.generate_weights(centroid, size)
+            
+            weights = weights_CEM + weights_CEMir + weights_CEMi
+            #generate pop_size generations
+            for i in range(3*size):
+                scores[i] = test_function(weights[i])
+            matrix_CEM.update_noise()
+            matrix_CEMir.update_noise()
+            matrix_CEMi.update_noise()
+            # Keep only best individuals to compute the new centroid
+            elites_idxs = np.argsort(scores)[:elites_nb]
+            elites_weights = [weights[k] for k in elites_idxs]
+            elites_weights = torch.cat(
+                [torch.tensor(w).unsqueeze(0) for w in elites_weights], dim=0
+            )
+            centroid = elites_weights.mean(0)
+            matrix_CEM.update_covariance_inverse_resize(elites_weights)
+            matrix_CEMir.update_covariance(elites_weights)
+            matrix_CEMi.update_covariance(elites_weights)
+
+            all_weights.append(np.array([t.detach().cpu().numpy() for t in weights]))
+            all_centroids.append(centroid.detach().cpu().numpy())
+            all_covs.append(matrix_CEM.get_cov().detach().cpu().numpy())
+            all_covs.append(matrix_CEMir.get_cov().detach().cpu().numpy())
+            all_covs.append(matrix_CEMi.get_cov().detach().cpu().numpy())
         all_weights, all_centroids,all_covs = np.array(all_weights),np.array(all_centroids),np.array(all_covs)
 
         return all_weights,all_centroids,all_covs
@@ -245,4 +321,10 @@ def plot_confidence_ellipse(cov, ax,weights, n_std=3.0, facecolor='none', **kwar
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
-    
+def intersection (A , B) :
+    count = 0
+    for a in A:
+        for b in B:
+            if torch.equal(a, b):
+                count += 1
+    return count 

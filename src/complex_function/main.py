@@ -11,7 +11,7 @@ import os
 score_function = Sphere
 
 
-def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
+def plot_cem_on_function(f, folder_plots ="plots",folder_analysis ="analysis",
                              show_plot=False, show_analysis=False,
                              show_points=False, show_ellipsoids=False,show_centroids=True):
     """Plot an exectution of the CEM with `f` as the score function
@@ -58,8 +58,10 @@ def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
     norm = matplotlib.colors.Normalize(vmin=1, vmax = max_epochs)
 
 
-    if CEM_comb :
-        all_weights, all_centroids, all_covs = CEM_combine(f ,  centroid , seed , sigma , noise_multiplier , max_epochs , pop_size , elites_nb )
+    if CEM_comb == 1:
+        all_weights, all_centroids, all_covs , percentage_CEM , percentage_CEMir = CEM_combine(f ,  centroid , seed , sigma , noise_multiplier , max_epochs , pop_size , elites_nb )
+    elif CEM_comb == 2 :
+        all_weights, all_centroids, all_covs = CEM_combine_2(f ,  centroid , seed , sigma , noise_multiplier , max_epochs , pop_size , elites_nb )
     else :
         all_weights, all_centroids, all_covs = CEM(f , EXPERIMENT, CEMi , centroid , seed , sigma , noise_multiplier , max_epochs , pop_size , elites_nb ) 
     
@@ -87,8 +89,10 @@ def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
     if show_centroids:
         ax.plot(all_centroids[:,0],all_centroids[:,1],marker='^',c='r')
     
-    if CEM_comb :
-        cem_variant  =  'combine'
+    if CEM_comb == 1:
+        cem_variant  =  ' merged with CEMir'
+    elif CEM_comb == 2:
+        cem_variant  =  ' merged with CEMi and CEMir'
     elif EXPERIMENT: # If we want to test the variant of the CEm that we experiment on
         cem_variant  =  'iResize' 
     elif  CEMi :
@@ -104,12 +108,13 @@ def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
     if show_plot:
         plt.show()
 
-    print("heyy")
     analyzer  =  Analyzer(f ,all_weights,all_covs,all_centroids,folder=folder_analysis, file_name=plt_title)
     analyzer.xy_centroid_evolution()
     analyzer.variance_evolution()
+    if CEM_comb == 1:
+        analyzer.percentage_evolution(percentage_CEM , percentage_CEMir)
 
-def plot_every_function(folder_plots = "plots_",folder_analysis ="analysis_" ,show_plot=False,show_analysis=False,show_points=False, show_ellipsoids=False,show_centroids=True):
+def plot_every_function(folder_plots = "plots",folder_analysis ="analysis" ,show_plot=False,show_analysis=False,show_points=False, show_ellipsoids=False,show_centroids=True):
     
     """Generate a plot for every function in the module `test_function` along with an Analyse for every execution
     
@@ -160,4 +165,9 @@ if __name__=='__main__':
     #plot_every_function(show_points=False,show_plot=False,show_ellipsoids=False,show_centroids=True)
 
     #only plot the cem on the function `score_function`
-    plot_cem_on_function(score_function,show_points=1,show_plot=True,show_ellipsoids=0,show_centroids=1)
+    plot_cem_on_function(score_function,show_points=1,show_plot=0,show_ellipsoids=0,show_centroids=1)
+  
+
+
+
+

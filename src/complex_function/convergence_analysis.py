@@ -61,6 +61,7 @@ class Analyzer():
         """
         
         fig,(ax1,ax2) = plt.subplots(2,layout='constrained')
+        #fig.set_size_inches(12, 12)
         fig.suptitle(f"Evolution of the weights in the phase space  function\n{self.file_name}")
         ax1.set_title("Evolution of the x,y coordinates of the centroids over generations")
         ax1.plot(self.all_ctrds[:,0],label='x') 
@@ -85,8 +86,7 @@ class Analyzer():
         
 
     
-    def variance_evolution(self,show=False):
-        print("variation ev " , self.file_name)
+    def variance_evolution(self,show=False ):
         """Plots the evolution of the Variance and Covariance of the dataset along the X and Y axis
         
         Parameters
@@ -99,6 +99,7 @@ class Analyzer():
         Generates a plot"""
 
         fig,ax = plt.subplots()
+        #fig.set_size_inches(12, 12)
         var_X =self.all_cvs[:,0,0]
         var_Y = self.all_cvs[:,1,1]
         cov_XY = self.all_cvs[:,0,1]
@@ -111,6 +112,34 @@ class Analyzer():
         ax.set_xlabel('Generation')
         ax.set_ylabel('Variance')
         path  = f"{self.folder}/variance_evolution/{self.f.__name__}/"
+        if not os.path.exists("./"+path):
+            os.makedirs(path)
+        plt.savefig(path+self.file_name+".png")
+        
+        if show:
+            plt.show()
+    
+    def percentage_evolution(self,percentage_CEM , percentage_CEMir ,show=False):
+        """
+        Parameters
+        --
+        show=false
+            open a new matplotlib window at each generation
+            
+        Side-effects
+        --
+        Generates a plot"""
+
+        fig,ax = plt.subplots()
+        #fig.set_size_inches(12, 12)
+        ax.plot(percentage_CEM,label='percentage_CEM') 
+        ax.plot(percentage_CEMir,label='percentage_CEMir') 
+        ax.set_title(f'Percentage of CEM and CEMir\n {self.file_name}')
+        ax.legend()
+        ax.grid()
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Percentage')
+        path  = f"{self.folder}/percentage_evolution/{self.f.__name__}/"
         if not os.path.exists("./"+path):
             os.makedirs(path)
         plt.savefig(path+self.file_name+".png")
