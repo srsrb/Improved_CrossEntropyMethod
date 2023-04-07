@@ -11,7 +11,7 @@ import os
 score_function = Ackley
 
 
-def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
+def plot_cem_on_function(f, folder_plots ="plots_2",folder_analysis ="analysis_2",
                              show_plot=False, show_analysis=False,
                              show_points=False, show_ellipsoids=False,show_centroids=True):
     """Plot an exectution of the CEM with `f` as the score function
