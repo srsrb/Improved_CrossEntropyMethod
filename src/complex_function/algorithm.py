@@ -68,6 +68,7 @@ class CovMatrix:
             self.cov =  torch.cholesky_inverse(u)+ self.noise
 
     def update_covariance_inverse_resize(self,elite_weights)->None: 
+        print("elite_weights " , elite_weights)
         cov = torch.cov(elite_weights.T) + self.noise
         u  =  torch.linalg.cholesky(cov)
         cov_i =   torch.cholesky_inverse(u)
@@ -106,7 +107,7 @@ def CEM(test_function,merge, EXPERIMENT, CEMi , centroid , seed , sigma , noise_
             all_covs.append(matrix_CEM.get_cov().detach().cpu().numpy())
         else:
             size = pop_size
-       
+
 
         for epoch in range(max_epochs):
             print(f'Simulating {epoch} \n',end='\r')

@@ -8,7 +8,7 @@ from algorithm import *
 import os
 
 
-score_function = Ackley
+score_function = Sphere
 
 
 def plot_cem_on_function(f, folder_plots ="plots_",folder_analysis ="analysis_",
@@ -165,7 +165,7 @@ if __name__=='__main__':
     #plot_every_function(show_points=False,show_plot=False,show_ellipsoids=False,show_centroids=True)
 
     #only plot the cem on the function `score_function`
-    plot_cem_on_function(score_function,show_points=1,show_plot=1,show_ellipsoids=1,show_centroids=1)
+    plot_cem_on_function(score_function,show_points=1,show_plot=1,show_ellipsoids=0,show_centroids=1)
   
 
 
