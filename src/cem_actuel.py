@@ -1,3 +1,4 @@
+
 from turtle import update
 import numpy as np
 import gym
@@ -6,6 +7,7 @@ import os
 
 import torch
 import torch.nn as nn
+#torch.set_default_tensor_type(torch.DoubleTensor)
 import hydra
 import matplotlib.pyplot as plt
 import matplotlib.colors
@@ -30,7 +32,7 @@ class CovMatrix:
         """
         policy_dim = centroid.size()[0]
         self.policy_dim  = policy_dim
-        self.noise = torch.diag(torch.ones(policy_dim) * sigma)
+        self.noise = torch.diag(torch.ones(policy_dim ) * sigma)
         self.cov = torch.diag(torch.ones(policy_dim) * torch.var(centroid)) + self.noise
         self.noise_multiplier = noise_multiplier
         self.cfg  =  cfg
@@ -73,16 +75,13 @@ class CovMatrix:
             u  =  torch.linalg.cholesky(cov)
             self.cov =  torch.cholesky_inverse(u)+ self.noise
 
-        """def update_covariance_inverse_resize(self,elite_weights)->None: 
+    def update_covariance_inverse_resize(self,elite_weights)->None: 
         cov = torch.cov(elite_weights.T) + self.noise 
         print("les valeurs propres sont : ",torch.linalg.eigvalsh(cov))
         if torch.all(torch.linalg.eigvalsh(cov) > 0):
             print("La matrice est définie positive")
         else:
-            print("La matrice n'est pas définie positive. Ajout d'une petite valeur diagonale.")
-            eps = 1e-5
-            cov = cov + eps * torch.eye(cov.shape[0])
-            print("Les nouvelles valeurs propres sont : ", torch.linalg.eigvalsh(cov))
+            print("La matrice n'est pas définie positive.")
             
         
         u  =  torch.linalg.cholesky(cov)
@@ -90,26 +89,12 @@ class CovMatrix:
         
         eig_cov_max = torch.linalg.eigh(cov)[0][-1]
         eig_cov_i_max = torch.linalg.eigh(cov_i)[0][-1]
-        self.cov  =  (cov_i*eig_cov_max/eig_cov_i_max)+ self.noise
-        """
-    def update_covariance_inverse_resize(self, elite_weights):
-            cov = torch.cov(elite_weights.T) + self.noise
-            print("les valeurs propres sont : ", torch.linalg.eigvalsh(cov))
-            
-            if torch.all(torch.linalg.eigvalsh(cov) > 0):
-                print("La matrice est définie positive")
-                u = torch.linalg.cholesky(cov)
-                cov_i = torch.cholesky_inverse(u)
-            else:
-                print("La matrice n'est pas définie positive. Utilisation de la décomposition SVD.")
-                U, S, V = torch.svd(cov)
-                S[S < 0] = 0.0
-                cov_i = torch.mm(V, torch.mm(torch.diag(1.0 / S), U.t()))
-            
-            eig_cov_max = torch.linalg.eigh(cov)[0][-1]
-            eig_cov_i_max = torch.linalg.eigh(cov_i)[0][-1]
-            self.cov = (cov_i * eig_cov_max / eig_cov_i_max) + self.noise
-
+        print("eig_cov_max ",eig_cov_max)
+        print("eig_cov_i_max ",eig_cov_i_max)
+        print("facteur ",eig_cov_max/eig_cov_i_max)
+        self.cov  =  (cov_i * (eig_cov_max/eig_cov_i_max))+ self.noise
+        
+    
 
 # Create the PPO Agent
 def create_CEM_agent(cfg, env_agent , seed):
@@ -135,6 +120,7 @@ def make_gym_env(env_name):
 
 
 def run_cem(cfg, fonction_json):
+
     cmap = plt.cm.rainbow
     norm = matplotlib.colors.Normalize(vmin=1, vmax=cfg.algorithm.max_epochs)
 
@@ -298,7 +284,7 @@ def run_cem(cfg, fonction_json):
 
 @hydra.main(
     config_path="./configs/",
-    config_name="cem_LunarLander.yaml",
+    config_name="cem_CartPole.yaml",
 )
 def main(cfg):
     import torch.multiprocessing as mp

@@ -27,7 +27,7 @@
             nb_runs : 1
             diag_covMatrix  : False
             architecture:
-                  actor_hidden_size: [4, 4]
+                  actor_hidden_size: [2]
 
       gym_env:
             classname: __main__.make_gym_env
