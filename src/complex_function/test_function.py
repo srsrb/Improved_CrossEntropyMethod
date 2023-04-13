@@ -51,3 +51,12 @@ def mishra_bird(d):
     x = d[0]
     y = d[1]
     return np.sin(y) * np.exp((1 - np.cos(x))**2) + np.cos(x) * np.exp((1 - np.sin(y))**2) + (x - y)**2
+
+def distance(d):
+    a,b = [150,200]
+    x = d[0]
+    y = d[1]
+    return np.sqrt((a-x)**2+(b-y)**2)
+
+
+

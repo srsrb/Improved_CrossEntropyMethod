@@ -2,6 +2,9 @@
       plot_agents: True
       verbose: True
       CEMi: False
+      merge : False
+      EXPERIMENT : True
+      make_plot : True
 
       logger:
             classname: bbrl.utils.logger.TFLogger
@@ -22,7 +25,6 @@
             nb_evals: 10
             max_epochs: 100
             nb_runs : 4
-            make_plot : True
             diag_covMatrix  : False
             architecture:
                   actor_hidden_size: [2, 2]
