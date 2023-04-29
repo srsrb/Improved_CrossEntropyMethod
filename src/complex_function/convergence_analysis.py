@@ -90,9 +90,7 @@ class convergence_Analyzer():
             ls_eig_v = []
             for cov in ls_covs:
                 w, v = np.linalg.eigh(cov)
-                print(w)
                 ls_vectors = np.asarray([v[:, i] for i in range(len(w))])
-                print("EIG VALUES", w)
                 ls_eig_v.append(ls_vectors)
             return np.asarray(ls_eig_v)
 
@@ -103,7 +101,7 @@ class convergence_Analyzer():
 
         V = make_tangents_list()
         ls_main_axis_matrices = [make_ellips_main_axis_list(
-            ls_covs[1:]) for ls_covs in self.all_cvs]
+            ls_covs) for ls_covs in self.all_cvs]
 
         projSIG, projGAM = [], []
         for ls_main_axis in ls_main_axis_matrices:
