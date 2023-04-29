@@ -69,7 +69,6 @@ class CovMatrix:
             return res
 
         cov = torch.cov(elite_weights.T) + self.noise
-        print("ma mat:", cov)
         if self.cfg.algorithm.diag_covMatrix:
             self.cov = inv_diagonal(torch.diag(torch.diag(cov))) + self.noise
 
@@ -105,6 +104,43 @@ class CovMatrix:
             self.cov *= (torch.max(eigenvalues) / torch.max(eigenvaluesI))
 
 
+    def update_covariance_inverse_resize(self, elite_weights) -> None:
+        cov = torch.cov(elite_weights.T) + self.noise
+        u = torch.linalg.cholesky(cov)
+        cov_i = torch.cholesky_inverse(u)
+
+        eig_cov_max = torch.linalg.eigh(cov)[0][-1]
+        eig_cov_i_max = torch.linalg.eigh(cov_i)[0][-1]
+        self.cov = torch.mul(cov_i,eig_cov_max/eig_cov_i_max) + self.noise
+
+    def update_covariance_inverse_resize_clipped(self, elite_weights) -> None:
+        cov = torch.cov(elite_weights.T) + self.noise
+        u = torch.linalg.cholesky(cov)
+        cov_i = torch.cholesky_inverse(u)
+
+        eig_cov_max = torch.linalg.eigh(cov)[0][-1]
+        eig_cov_i_max = torch.linalg.eigh(cov_i)[0][-1]
+        cov_clipped  = (cov_i*eig_cov_max/eig_cov_i_max) + self.noise
+        print(self.noise)
+        n =  cov_clipped.shape[0]
+        clip_threshold =  1000
+        for i in range(n):
+            for j in range(n):
+                if cov_clipped[i][j] > clip_threshold:
+                    print("Clipped ",i,j)
+                    cov_clipped[i][j] = clip_threshold
+        self.cov = cov_clipped
+
+    def update_cov_cercle(self,elite_weights):
+        cov = torch.cov(elite_weights.T) + self.noise
+        u = torch.linalg.cholesky(cov)
+        cov_i = torch.cholesky_inverse(u)
+        eig_cov_max = torch.linalg.eigh(cov)[0][-1]
+        eig_cov_i_max = torch.linalg.eigh(cov_i)[0][-1]
+        facteur   = eig_cov_max/eig_cov_i_max
+        self.cov =  torch.diag(torch.ones(self.policy_dim) * facteur) + self.noise
+       
+
 # Create the PPO Agent
 def create_CEM_agent(cfg, env_agent):
     obs_size, act_size = env_agent.get_obs_and_actions_sizes()
@@ -126,7 +162,6 @@ def create_CEM_agent(cfg, env_agent):
 def make_gym_env(env_name):
     env = gym.make(env_name)
     return env
-
 
 def run_cem(cfg, fonction_json):
     cmap = plt.cm.rainbow
@@ -193,7 +228,7 @@ def run_cem(cfg, fonction_json):
                 rewards = workspace["env/cumulated_reward"][-1]
                 # calculate the mean of all rewards
                 mean_reward = rewards.mean()
-                logger.add_log("reward", mean_reward, nb_steps)
+                #logger.add_log("reward", mean_reward, nb_steps)
                 scores.append(mean_reward)
             # Keep only best individuals to compute the new centroid
             elites_idxs = np.argsort(scores)[-cfg.algorithm.elites_nb:]
@@ -208,7 +243,8 @@ def run_cem(cfg, fonction_json):
             # Update covariance
             matrix.update_noise()
             if cfg.CEMi:
-                matrix.update_covariance_inverse(elites_weights)
+                print("here")
+                matrix.update_cov_cercle(elites_weights)
             else:
                 matrix.update_covariance(elites_weights)
 

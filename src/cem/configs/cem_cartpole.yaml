@@ -23,7 +23,7 @@
             eval_interval: 2000
             nb_evals: 10
             max_epochs: 10 #nombre maxi d'iterations
-            nb_runs : 1      
+            nb_runs : 4      
             diag_covMatrix : False # True if you only want to use the diagonal of the cov matrix
            
             

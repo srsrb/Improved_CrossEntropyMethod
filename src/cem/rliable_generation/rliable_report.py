@@ -44,6 +44,8 @@ class rliable_Analyzer():
         self.score_matrix_dict =  h.zip_to_dictionnary(algorithm_names,ls_score_matrix_all_gen)
         self.algorithms = algorithm_names
     
+    
+
     def plot_aggregate_metrics(self):
         
         algorithms =  self.algorithms
@@ -63,9 +65,11 @@ class rliable_Analyzer():
         aggregate_scores, aggregate_score_cis,
         metric_names=['Median', 'IQM', 'Mean', 'Optimality Gap'],
         algorithms=algorithms, xlabel='Normalized Score')
-        plt.legend()
+        
+        fig.legend()
         print("Ici!")
         plt.show()
+        plt.savefig("agg_metrics.png", dpi=150)
 
     def plot_probability_improvement(self, list_pairs):
         #PAS UTILISABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -75,6 +79,9 @@ class rliable_Analyzer():
         average_probabilities, average_prob_cis = rly.get_interval_estimates(
         procgen_algorithm_pairs, metrics.probability_of_improvement, reps=2000)
         ax = plot_utils.plot_probability_of_improvement(average_probabilities, average_prob_cis)
+        ax.legend()
+        plt.show()
+        plt.savefig("proba_improbbement.png", dpi=150)
 
     def plot_sample_efficiency_curve(self):
         algorithms =self.algorithms
@@ -83,7 +90,7 @@ class rliable_Analyzer():
         # `(num_runs x num_games x 200)` where scores are recorded every million frame.
         ale_all_frames_scores_dict = self.score_matrix_all_gen_dict
         print(ale_all_frames_scores_dict)
-        number_generations = np.size(ale_all_frames_scores_dict[self.algorithms[0]][0,0],0) 
+        number_generations = len(ale_all_frames_scores_dict[self.algorithms[0]][0]) 
         print("mon nombre de GEneratiooooin@@@@@@@@@",number_generations)  # frames = generations
         
         frames = np.array([k for k in range(0,number_generations,2)]) 
@@ -98,7 +105,9 @@ class rliable_Analyzer():
             frames+1, iqm_scores, iqm_cis, algorithms=algorithms,
             xlabel=r'Generation',
             ylabel='IQM Normalized Score')
+        ax.legend()
         plt.show()
+        plt.savefig("efficiency_curve.png", dpi=150)
         return ax 
         
     def plot_performance_profiles(self):
@@ -110,7 +119,9 @@ class rliable_Analyzer():
         # score matrices, each of which is of size `(num_runs x num_games)`.
         atari_200m_normalized_score_dict = self.score_matrix_dict
         # Human normalized score thresholds
-        atari_200m_thresholds = np.linspace(0.0, 8.0, 81)
+        ale_all_frames_scores_dict = self.score_matrix_all_gen_dict
+        number_generations = len(ale_all_frames_scores_dict[self.algorithms[0]][0,0,0]) 
+        atari_200m_thresholds = np.linspace(0.0,number_generations, 81)
         score_distributions, score_distributions_cis = rly.create_performance_profile(
         atari_200m_normalized_score_dict, atari_200m_thresholds)
         # Plot score distributions
@@ -121,6 +132,7 @@ class rliable_Analyzer():
         colors=dict(zip(self.algorithms, sns.color_palette('colorblind'))),
         xlabel=r'Human Normalized Score $(\tau)$',
         ax=ax)
-        print("ii")
+        fig.legend()
+        plt.savefig("perf_profiles.png", dpi=150)
         plt.show()
 
