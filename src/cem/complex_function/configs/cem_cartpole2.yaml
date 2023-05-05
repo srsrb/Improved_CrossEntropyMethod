@@ -20,10 +20,12 @@
             elites_nb: 10
             n_processes: 1
             n_envs: 8
+            seuil_convergence: -500
+            delta_convergence: 5
             eval_interval: 2000
             nb_evals: 10
             max_epochs: 3 #nombre maxi d'iterations
-            nb_runs : 5     
+            nb_runs : 4      
             diag_covMatrix : False # True if you only want to use the diagonal of the cov matrix
            
             

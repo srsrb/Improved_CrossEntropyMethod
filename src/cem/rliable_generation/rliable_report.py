@@ -33,7 +33,7 @@ class rliable_Analyzer():
             Used for the normalization of the scores
         """
 
-        self.base_path= base_path_jsons
+        self.base_path = base_path_jsons
         # list of all jsons dictionnaries corresponding to the different algorithms
         lst_json_dicts  =   [ h.load_json(algo,base_path_jsons) for algo in algorithm_names ] 
         
@@ -66,10 +66,10 @@ class rliable_Analyzer():
         metric_names=['Median', 'IQM', 'Mean', 'Optimality Gap'],
         algorithms=algorithms, xlabel='Normalized Score')
         
-        fig.legend()
-        print("Ici!")
+        fig.set_size_inches(18.5, 10.5, forward=True)
+        fig.set_tight_layout(True)
+        plt.savefig("agg_metrics.png", bbox_inches='tight')
         plt.show()
-        plt.savefig("agg_metrics.png", dpi=150)
 
     def plot_probability_improvement(self, list_pairs):
         #PAS UTILISABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

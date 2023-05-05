@@ -248,6 +248,7 @@ def CEM_GEN(score_function, initial_matrices:  list[CovMatrix], ls_update_covari
     all_elite_scores = []
 
     for epoch in range(max_epochs):
+        print(f"Gen {epoch}/{max_epochs}")
         #print(f'Simulating {epoch}/{max_epochs} \n', end='\r')
         if flag_a_converge:
             all_centroids.append(all_centroids[-1])
@@ -315,6 +316,7 @@ def CEM_GEN(score_function, initial_matrices:  list[CovMatrix], ls_update_covari
             elite_scores, seuil_convergence, delta_convergence)
         convergence_generation = epoch if flag_a_converge else None
 
+   
     all_weights = np.array(all_weights)
     all_elites = np.array(all_elites)
     all_elite_scores = np.array(all_elite_scores)

@@ -59,7 +59,7 @@ def CEM_GYM_Generique(cfg, CEM_function):
 	results = []
 	for run in range(nb_runs):
 		print(f'Run{run}/{nb_runs}')
-		seed += 1
+		
 		torch.manual_seed(seed)
 		eval_env_agent = create_no_reset_env_agent(cfg)
 
@@ -110,7 +110,7 @@ def isoler_resultat(results, nom_resultat):
 
 	ls = []
 	for run in results:
-		assert nom_resultat in run,  f"'{nom_resultat}' n'est pas un resultat dans le dictionnaire des resultats"
+		assert nom_resultat in run,  f"'{nom_resultat}' n'est pas un resultat dans le dictionnaire des resultats: {list(run.keys())}"
 		ls.append(run[nom_resultat])
 	return np.array(ls)
 

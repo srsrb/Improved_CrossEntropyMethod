@@ -1,11 +1,14 @@
 import json
+import os
 from bbrl_examples.algos.cem.complex_function.constant import *
+from bbrl_examples.algos.cem.complex_function import cem_actuel
+import numpy as np
 
 class JSON_Object:
 	"""JSON object that can store the result of multiple runs of an algorithm on different environments.
 	"""
 
-	def __init__(self,ls_envs_names ,  file_name) -> None:
+	def __init__(self,ls_envs_names ,  file_name, folder = "./FolderJson" ) -> None:
 		"""Create a new JSON object that can store the result of multiple runs of an algorithm on different environments.
 		
 		Parameters
@@ -17,6 +20,7 @@ class JSON_Object:
 		"""
 		self.ls_envs = ls_envs_names
 		self.dict = {}
+		self.folder = folder
 		self.file_name = file_name
 
 		for env in self.ls_envs:
@@ -65,14 +69,16 @@ class JSON_Object:
 		nb_runs  =  len(self.dict[self.ls_envs[0]])
 		print(f"Sampled {len(self.ls_envs)} environments with {nb_runs} runs for {self.file_name}.json ! \n ")
 
-		out_file = open(f'{self.file_name}.json','w+')
+		if not os.path.exists(f'./{self.folder}'):
+			os.makedirs(f'./{self.folder}')
+		out_file = open(f'./{self.folder}/{self.file_name}.json','w+')
 		json.dump(self.dict,out_file)
-		print(f'Generated \"{self.file_name}.json\" !')
+		print(f'Generated \"{self.folder}/{self.file_name}.json\" !')
 
 class _JSON_Generator_Single_Algorithm():
 	"""generates the JSON file for a certin number of run for the specified algoritgm"""
 
-	def __init__(self , ls_environments_f, algorithm_f, nb_runs, **kwargs) -> None:
+	def __init__(self , ls_environments_f, algorithm_f, nb_runs, lst_parameter_dicts, seed  =  42) -> None:
 		"""generates the JSON file for a certin number of run for the specified algoritgm
 
 		Parameters
@@ -89,7 +95,9 @@ class _JSON_Generator_Single_Algorithm():
 		self.ls_environments = ls_environments_f # list of score functions
 		self.algo = algorithm_f
 		self.nb_runs =  nb_runs
-		self.kwargs = kwargs
+		self.seed  = seed
+		
+		self.lst_parameter_dicts = lst_parameter_dicts
 
 		ls_envs_names  =   [ env.__name__ for env in ls_environments_f ]
 
@@ -110,24 +118,28 @@ class _JSON_Generator_Single_Algorithm():
 		
 		return weights_merged
 
-
-
 	def _execute_runs(self):
-		seed0 = self.kwargs['seed']
+		seed0 = self.seed
 
 		for i in range(self.nb_runs):
-
-			self.kwargs['seed'] = seed0+i
-			
-			for env in self.ls_environments:
-				all_weights, all_elites, all_centroids, all_covs, all_percentages, labels  = self.algo(env,**self.kwargs)
-
-				all_centroids = all_centroids.tolist()
-				ls_scores  =  [env(w) for w in all_centroids]
-				
-				self.JSON_object.add_run_to_environment(env.__name__,ls_scores)
 		
-		self.kwargs['seed'] =  seed0
+			seed = seed0+i
+			
+			for i in range(len(self.ls_environments)):
+				env  =  self.ls_environments[i]
+				param_dict  =  self.lst_parameter_dicts[i]
+				param_dict['seed'] = seed
+				ls_scores = self.algo(env,**param_dict)['all_elite_scores']
+
+				# all_centroids = cem_actuel.isoler_resultat(self.algo(env,**self.kwargs),'all_centroids')
+
+				# all_centroids = all_centroids.tolist()
+				# ls_scores  =  [env(w) for w in all_centroids]
+				
+				ls_scores = np.array(ls_scores)
+				ls_scores = ls_scores.flatten().tolist()
+
+				self.JSON_object.add_run_to_environment(env.__name__,ls_scores)
 	
 	def generate_json(self):
 		self._execute_runs()
@@ -136,7 +148,7 @@ class _JSON_Generator_Single_Algorithm():
 class JSON_Generator():
 	"""generates the JSON file for a certin number of run for the specified algorithms"""
 	
-	def __init__(self , ls_environments_f, ls_algorithms_f, nb_runs, **kwargs):
+	def __init__(self , ls_environments_f, ls_algorithms_f, nb_runs, lst_parameter_dicts):
 		"""generates the JSON file for a certin number of run for the specified algorithms
 
 		Parameters
@@ -147,10 +159,9 @@ class JSON_Generator():
 			the algorithm tested
 		nb_runs : _type_
 			The number of independant runs
-		kwargs:
-			kwargs parameters for the algorithms in `ls_algorithm_f` 
+		
 		"""
-		self.ls_JSONS = [ _JSON_Generator_Single_Algorithm(ls_environments_f,algo,nb_runs,**kwargs) for algo in ls_algorithms_f]
+		self.ls_JSONS = [ _JSON_Generator_Single_Algorithm(ls_environments_f,algo,nb_runs,lst_parameter_dicts) for algo in ls_algorithms_f]
 
 	def generate_jsons(self):
 		for JSON_obj in self.ls_JSONS:

@@ -67,11 +67,11 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 		case 'CEMi':
 			method = alg.CEM
 		case 'CEMir':
-		   method = alg.CEMir
+			method = alg.CEMir
 		case 'CEM+CEMi':
-		   method = alg.CEM_plus_CEMi
+			method = alg.CEM_plus_CEMi
 		case 'CEM+CEMiR':
-		   method = alg.CEM_plus_CEMir
+			method = alg.CEM_plus_CEMir
 		case 'CEM_circle':
 			method = alg.CEM_circle
 		case _:
