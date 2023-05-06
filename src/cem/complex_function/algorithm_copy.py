@@ -162,7 +162,7 @@ def test_a_converge(elite_scores, seuil_convergence, delta_convergence):
 
     retourne Vrai ou faux"""
     max_score = np.max(elite_scores)
-    if seuil_convergence == None or delta_convergence == None:
+    if seuil_convergence is None or delta_convergence is None:
         return False
     return abs(seuil_convergence-max_score) < delta_convergence
 

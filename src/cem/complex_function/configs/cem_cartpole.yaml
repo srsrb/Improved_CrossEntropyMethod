@@ -24,8 +24,8 @@
             delta_convergence: 5
             eval_interval: 2000
             nb_evals: 10
-            max_epochs: 3 #nombre maxi d'iterations
-            nb_runs : 4      
+            max_epochs: 30 #nombre maxi d'iterations
+               
             diag_covMatrix : False # True if you only want to use the diagonal of the cov matrix
            
             
