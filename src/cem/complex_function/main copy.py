@@ -26,6 +26,7 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 	folder_plots ="plots_"
 			The directory in which the plot will be generated and saved
 
+				ls_scores  =  [env(torch.from_numpy(w)).item() for w in all_centroids] # POUR ENVS GYM
 	folder_analysis ="analysis_"
 			The directory in which the analysis will be generated and saved
 
@@ -57,15 +58,18 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 	cmap = plt.cm.rainbow
 	norm = matplotlib.colors.Normalize(vmin=1, vmax=max_epochs)
 
+	name  =  score_function.__name__
+	centroid = centroids[name]
+
 	parameter_dict = {'seuil_convergence': seuil_convergence, 'delta_convergence':delta_convergence , 'centroid': torch.FloatTensor(
-		centroid), 'seed': seed, 'sigma': sigma, 'noise_multiplier': noise_multiplier, 'max_epochs': max_epochs, 'pop_size': pop_size, 'elites_nb': elites_nb}
+		centroid), 'seed': seed, 'sigma': sigma, 'noise_multiplier': noise_multiplier, 'max_epochs': max_epochs, 'pop_size': pop_size, 'elites_nb': elites_nb, 'seuil_convergence': seuil_convergence[name], 'delta_convergence': delta_convergence}
 	
 	algo_to_use = version_CEM if force_CEM_version == None else force_CEM_version
 	match algo_to_use:
 		case 'CEM':
 			method = alg.CEM
 		case 'CEMi':
-			method = alg.CEM
+			method = alg.CEMi
 		case 'CEMir':
 			method = alg.CEMir
 		case 'CEM+CEMi':
@@ -94,8 +98,8 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 	x_min, y_min = np.min(all_weights[:, :, 0]), np.min(all_weights[:, :, 1])
 	x_max, y_max = np.max(all_weights[:, :, 0]), np.max(all_weights[:, :, 1])
 
-	x = np.linspace(x_min-1, x_max+1, num=200)
-	y = np.linspace(y_min-1, y_max+1, num=200)
+	x = np.linspace(-10, 20, num=200)
+	y = np.linspace(-10, 25, num=200)
 	X, Y = np.meshgrid(x, y)
 	Z = f([X, Y])
 	plt.figure(figsize=(12, 12))
@@ -205,7 +209,7 @@ def plot_CEM_every_algo_every_function( **kwargs):
 if __name__ == '__main__':
 	
 	kwargs  = {}
-	kwargs.update( force_CEM_version  = None,folder_plots="plots", folder_analysis="analysis",
+	kwargs.update( force_CEM_version  = "CEMi",folder_plots="plots", folder_analysis="analysis",
 						 show_plot=False, show_analysis=False,
-						 show_points=False, show_ellipsoids=False, show_centroids=True)
-	plot_CEM_every_algo_every_function(**kwargs)
+						 show_points=True, show_ellipsoids=True, show_centroids=False)
+	plot_cem_on_function(distance,**kwargs)

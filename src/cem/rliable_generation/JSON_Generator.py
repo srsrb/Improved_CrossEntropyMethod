@@ -3,6 +3,7 @@ import os
 from bbrl_examples.algos.cem.complex_function.constant import *
 from bbrl_examples.algos.cem.complex_function import cem_actuel
 import numpy as np
+import torch
 
 class JSON_Object:
 	"""JSON object that can store the result of multiple runs of an algorithm on different environments.
@@ -129,16 +130,13 @@ class _JSON_Generator_Single_Algorithm():
 				env  =  self.ls_environments[i]
 				param_dict  =  self.lst_parameter_dicts[i]
 				param_dict['seed'] = seed
-				ls_scores = self.algo(env,**param_dict)['all_elite_scores']
-
+				all_centroids = self.algo(env,**param_dict)['all_centroids']
+				
 				# all_centroids = cem_actuel.isoler_resultat(self.algo(env,**self.kwargs),'all_centroids')
 
 				# all_centroids = all_centroids.tolist()
-				# ls_scores  =  [env(w) for w in all_centroids]
-				
-				ls_scores = np.array(ls_scores)
-				ls_scores = ls_scores.flatten().tolist()
-
+				ls_scores  =  [env(torch.from_numpy(w)).item() for w in all_centroids] # POUR ENVS GYM
+				# ls_scores  =  [env(w) for w in all_centroids] # POUR FCTS 2D
 				self.JSON_object.add_run_to_environment(env.__name__,ls_scores)
 	
 	def generate_json(self):

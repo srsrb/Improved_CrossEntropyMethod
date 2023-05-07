@@ -61,12 +61,11 @@ def make_jsons_for_all_GYM_env(nb_runs,lst_GYM_configs):
 		
 	json.generate_jsons()
 
-make_jsons_for_all_GYM_env(4,["cem_cartpole.yaml", "cem_mountaincar.yaml", "cem_acrobot.yaml", "cem_pendulum.yaml"])
+make_jsons_for_all_GYM_env(4, ["cem_acrobot.yaml","cem_cartpole.yaml","cem_mountaincar.yaml","cem_pendulum.yaml"])
 
 
 def get_min_maxs(ls_algos, folder_json):
 	"""
-
 	# Input
 		liste des algorithmes utilises
 		folder des fichiers jsons
@@ -96,11 +95,10 @@ def make_rliable_analysis():
 	ls_algos_names = [algo.__name__ for algo in ls_algos]
 	mins, maxs = get_min_maxs(ls_algos, './FolderJson')
 	analyzer = rly.rliable_Analyzer(ls_algos_names, './FolderJson', mins, maxs)
-	# analyzer.plot_sample_efficiency_curve() marche pas
+	analyzer.plot_sample_efficiency_curve()
 	analyzer.plot_performance_profiles()
 	analyzer.plot_aggregate_metrics()
-	ls_pairs = [ ('CEM','CEMi'), ('CEM','CEM_plus_CEMi'), ('CEM_plus_CEMi','CEMi')]
-	
+	ls_pairs = [ ('CEM','CEMi') , ('CEM','CEM_plus_CEMi'), ('CEMi','CEM_plus_CEMi')]
 	analyzer.plot_probability_improvement(ls_pairs)
 
 make_rliable_analysis()

@@ -20,22 +20,21 @@
             elites_nb: 10
             n_processes: 1
             n_envs: 8
-            seuil_convergence: -500
+            seuil_convergence: 100
             delta_convergence: 5
             eval_interval: 2000
             nb_evals: 10
             max_epochs: 30 #nombre maxi d'iterations
-               
+            nb_runs : 4      
             diag_covMatrix : False # True if you only want to use the diagonal of the cov matrix
-           
+            name_version_cem: CEM
             
             architecture:
                   actor_hidden_size: [2, 1]
 
       gym_env:
             classname: cem_actuel.make_gym_env
-            env_name: CartPole-v1
-
+            env_name: Acrobot-v1
       optimizer:
             classname: torch.optim.Adam
             lr: 0.001

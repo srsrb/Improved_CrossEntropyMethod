@@ -19,16 +19,22 @@ ls_algos = [CEM, CEMi, CEMir, CEM_plus_CEMi, CEM_plus_CEMir]
 
 
 def make_jsons_for_all_functions(nb_runs):
-
-	parameter_dict = {'centroid': torch.FloatTensor(
-		centroid), 'seed': seed, 'sigma': sigma, 'noise_multiplier': noise_multiplier, 'max_epochs': max_epochs, 'pop_size': pop_size, 'elites_nb': elites_nb}
-	print(parameter_dict['seed'])
+	lst_parameter_dicts = [] 
+	for f in ls_funct:
+		name  =  f.__name__
+		parameter_dict = {'centroid': torch.FloatTensor(
+			centroids[name]), 'seed': seed, 'sigma': sigma, 'noise_multiplier': noise_multiplier, 'max_epochs': max_epochs, 'pop_size': pop_size, 'elites_nb': elites_nb, 'seuil_convergence': seuil_convergence[name], 'delta_convergence': delta_convergence}
+		
+		print(parameter_dict['seed'])
+		
+		lst_parameter_dicts.append(parameter_dict)
+		
 	json = json_gen.JSON_Generator(
-		ls_funct, ls_algos, nb_runs, **parameter_dict)
+		ls_funct, ls_algos, nb_runs, lst_parameter_dicts)
 
 	json.generate_jsons()
 
-make_jsons_for_all_functions(5)
+# make_jsons_for_all_functions(5)
 
 def get_min_maxs(ls_algos_names, folder_json):
 	ls_algos_names = [algo.__name__ for algo in ls_algos]
@@ -58,10 +64,11 @@ def make_rliable_analysis():
 	ls_algos_names = [algo.__name__ for algo in ls_algos]
 
 	analyzer = rly.rliable_Analyzer(ls_algos_names, './FolderJson', mins, maxs)
-	#analyzer.plot_sample_efficiency_curve()
+	analyzer.plot_sample_efficiency_curve()
 	#analyzer.plot_performance_profiles()
-	analyzer.plot_aggregate_metrics()
-	#ls_pairs = [ (a.__name__ , b.__name__) for a in ls_algos for b in ls_algos]
+	#analyzer.plot_aggregate_metrics()
+	#ls_pairs = [ ('CEM','CEMi') , ('CEM','CEM_plus_CEMi'),('CEM','CEMir'),('CEM','CEM_plus_CEMir') ]
 	#analyzer.plot_probability_improvement(ls_pairs)
+	
 
 make_rliable_analysis()

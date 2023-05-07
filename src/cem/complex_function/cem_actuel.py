@@ -176,7 +176,7 @@ def save_plot(name,fig,show = False):
 
 @hydra.main(
 	config_path="./configs/",
-	config_name="cem_acrobot.yaml",
+	config_name="cem_caRTpole.yaml",
 )
 def main(cfg):
 	import torch.multiprocessing as mp
