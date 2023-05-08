@@ -56,19 +56,19 @@ def get_min_maxs(ls_algos_names, folder_json):
 	return dict_mini, dict_maxi
 
 
-mins, maxs = get_min_maxs(ls_algos, './FolderJson')
+mins, maxs = get_min_maxs(ls_algos, './FolderJsonFonction')
 print(mins,maxs)
 
 
 def make_rliable_analysis():
 	ls_algos_names = [algo.__name__ for algo in ls_algos]
 
-	analyzer = rly.rliable_Analyzer(ls_algos_names, './FolderJson', mins, maxs)
-	analyzer.plot_sample_efficiency_curve()
+	analyzer = rly.rliable_Analyzer(ls_algos_names, './FolderJsonFonction', mins, maxs)
+	# analyzer.plot_sample_efficiency_curve()
 	#analyzer.plot_performance_profiles()
 	#analyzer.plot_aggregate_metrics()
-	#ls_pairs = [ ('CEM','CEMi') , ('CEM','CEM_plus_CEMi'),('CEM','CEMir'),('CEM','CEM_plus_CEMir') ]
-	#analyzer.plot_probability_improvement(ls_pairs)
+	ls_pairs = [ ('CEMi','CEMir') , ('CEMi','CEM_plus_CEMi'), ('CEMi','CEM_plus_CEMir'), ('CEMir','CEM_plus_CEMi'), ('CEMir','CEM_plus_CEMir'), ('CEM_plus_CEMi','CEM_plus_CEMir') ]
+	analyzer.plot_probability_improvement(ls_pairs)
 	
 
 make_rliable_analysis()

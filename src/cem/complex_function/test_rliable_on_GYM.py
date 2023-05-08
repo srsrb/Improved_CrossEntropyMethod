@@ -13,6 +13,7 @@ import inspect
 from bbrl_examples.algos.cem.complex_function import test_function
 from bbrl_examples.algos.cem.complex_function.algorithm_copy import *
 
+import copy
 
 ls_algos = [CEM, CEMi, CEM_plus_CEMi]
 
@@ -25,20 +26,21 @@ def rename(newname):
 def make_jsons_for_all_GYM_env(nb_runs,lst_GYM_configs):
 	
 	ls_envs = []
-	lst_parameter_dict = [] 
+	lst_parameter_dict = []
 	for c in lst_GYM_configs:
 		
 		cfg = oc.load("./configs/"+c)
 
 		eval_env_agent = create_no_reset_env_agent(cfg)
 		eval_agent = create_CEM_agent(cfg, eval_env_agent)
+		
 
 		centroid = torch.nn.utils.parameters_to_vector(eval_agent.parameters())
 		
 		# -------------------------------------------------------------------------------------
 		# A modifier : c -> cfg.gym_env.env_name
 		@rename(c)
-		def score_function(w):
+		def score_function(w,eval_agent=eval_agent):
 			workspace = Workspace()
 			torch.nn.utils.vector_to_parameters(w, eval_agent.parameters())
 			eval_agent(workspace, t=0, stop_variable="env/done")
@@ -56,12 +58,13 @@ def make_jsons_for_all_GYM_env(nb_runs,lst_GYM_configs):
 		ls_envs.append(score_function)
 		lst_parameter_dict.append(parameter_dict)
 	
+	
 	json = json_gen.JSON_Generator(
 		ls_envs, ls_algos, nb_runs, lst_parameter_dict)
 		
 	json.generate_jsons()
 
-make_jsons_for_all_GYM_env(4, ["cem_acrobot.yaml","cem_cartpole.yaml","cem_mountaincar.yaml","cem_pendulum.yaml"])
+# make_jsons_for_all_GYM_env(4, ["cem_cartpole.yaml","cem_acrobot.yaml","cem_mountaincar.yaml","cem_pendulum.yaml"])
 
 
 def get_min_maxs(ls_algos, folder_json):

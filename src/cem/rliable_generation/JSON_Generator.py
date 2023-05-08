@@ -123,6 +123,7 @@ class _JSON_Generator_Single_Algorithm():
 		seed0 = self.seed
 
 		for i in range(self.nb_runs):
+			print(f"Run {i}/{self.nb_runs} with {self.algo.__name__}")
 		
 			seed = seed0+i
 			
