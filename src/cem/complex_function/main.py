@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors
 from convergence_analysis import *
 from test_function import *
-from bbrl_examples.algos.cem.complex_function.constant import *
-import bbrl_examples.algos.cem.complex_function.algorithm_copy as alg
+from constant import *
+import algorithm as alg
 import torch
 import os
 
@@ -97,7 +97,7 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 
 	x_min, y_min = np.min(all_weights[:, :, 0]), np.min(all_weights[:, :, 1])
 	x_max, y_max = np.max(all_weights[:, :, 0]), np.max(all_weights[:, :, 1])
-
+	print(x_min, y_min, x_max, y_max)
 	x = np.linspace(x_min-1, x_max+1, num=200)
 	y = np.linspace(y_min-1, y_max+1, num=200)
 	X, Y = np.meshgrid(x, y)
@@ -213,5 +213,5 @@ if __name__ == '__main__':
 						 show_plot=False, show_analysis=False,
 						 show_points=True, show_ellipsoids=True, show_centroids=True)
 	plot_CEM_every_algo_one_function(Sphere, **kwargs)
-	plot_CEM_every_algo_one_function(mishra_bird, **kwargs)
-	plot_CEM_every_algo_one_function(Griewank, **kwargs)
+	# plot_CEM_every_algo_one_function(mishra_bird, **kwargs)
+	# plot_CEM_every_algo_one_function(Griewank, **kwargs)
