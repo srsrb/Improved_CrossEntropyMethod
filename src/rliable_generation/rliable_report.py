@@ -1,3 +1,4 @@
+import json
 from rliable import library as rly
 from rliable import metrics
 from rliable import plot_utils
@@ -33,17 +34,17 @@ class rliable_Analyzer():
             Used for the normalization of the scores
         """
 
-        self.base_path= base_path_jsons
+        self.base_path = base_path_jsons
         # list of all jsons dictionnaries corresponding to the different algorithms
         lst_json_dicts  =   [ h.load_json(algo,base_path_jsons) for algo in algorithm_names ] 
         
         ls_score_matrix =   [   h.create_score_matrix (dict,min_scores,max_scores) for dict in lst_json_dicts  ]
         ls_score_matrix_all_gen =    [   h.create_score_matrix_all_gen(dict,min_scores,max_scores) for dict in lst_json_dicts  ]
         
-        self.score_matrix_all_gen_dict = h.zip_to_dictionnary(algorithm_names,ls_score_matrix)
-        self.score_matrix_dict =  h.zip_to_dictionnary(algorithm_names,ls_score_matrix_all_gen)
+        self.score_matrix_all_gen_dict = h.zip_to_dictionnary(algorithm_names,ls_score_matrix_all_gen)
+        self.score_matrix_dict =  h.zip_to_dictionnary(algorithm_names,ls_score_matrix)
         self.algorithms = algorithm_names
-    
+
     def plot_aggregate_metrics(self):
         
         algorithms =  self.algorithms
@@ -57,24 +58,33 @@ class rliable_Analyzer():
         metrics.aggregate_iqm(x),
         metrics.aggregate_mean(x),
         metrics.aggregate_optimality_gap(x)])
+        
         aggregate_scores, aggregate_score_cis = rly.get_interval_estimates(
         normalized_score_dict, aggregate_func, reps=50000)
+
         fig, axes = plot_utils.plot_interval_estimates(
         aggregate_scores, aggregate_score_cis,
         metric_names=['Median', 'IQM', 'Mean', 'Optimality Gap'],
         algorithms=algorithms, xlabel='Normalized Score')
-        plt.legend()
-        print("Ici!")
-        plt.show()
+        
+        fig.set_size_inches(18.5, 10.5, forward=True)
+        fig.set_tight_layout(True)
+        plt.savefig("agg_metrics.png", bbox_inches='tight')
+        #plt.show()
 
     def plot_probability_improvement(self, list_pairs):
-        #PAS UTILISABLE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # Load ProcGen scores as a dictionary containing pairs of normalized score
         # matrices for pairs of algorithms we want to compare
         procgen_algorithm_pairs = h.make_procgen_pairs(list_pairs,self.score_matrix_dict)
         average_probabilities, average_prob_cis = rly.get_interval_estimates(
         procgen_algorithm_pairs, metrics.probability_of_improvement, reps=2000)
         ax = plot_utils.plot_probability_of_improvement(average_probabilities, average_prob_cis)
+        # ax.legend()
+        ax.figure.set_size_inches(18.5, 10.5, forward=True)
+        ax.figure.set_tight_layout(True)
+        plt.savefig("proba_improbbement.png", dpi=150)
+        #plt.show()
+        
 
     def plot_sample_efficiency_curve(self):
         algorithms =self.algorithms
@@ -82,14 +92,18 @@ class rliable_Analyzer():
         # score matrices across all 200 million frames, each of which is of size
         # `(num_runs x num_games x 200)` where scores are recorded every million frame.
         ale_all_frames_scores_dict = self.score_matrix_all_gen_dict
-        print(ale_all_frames_scores_dict)
-        number_generations = np.size(ale_all_frames_scores_dict[self.algorithms[0]][0,0],0) 
-        print("mon nombre de GEneratiooooin@@@@@@@@@",number_generations)  # frames = generations
+        # print(ale_all_frames_scores_dict)
+        number_generations = np.shape(ale_all_frames_scores_dict[self.algorithms[0]])[-1]
+        # print("mon nombre de Generation",number_generations)  # frames = generations
         
         frames = np.array([k for k in range(0,number_generations,2)]) 
-        print(frames)
-        ale_frames_scores_dict = {algorithm: score[:, :, frames] for algorithm, score
-                            in ale_all_frames_scores_dict.items()}
+        # print(frames)
+        
+        ale_frames_scores_dict = {}
+
+        for algorithm, score in ale_all_frames_scores_dict.items():
+            ale_frames_scores_dict[algorithm] =  score[:, :, frames]
+
         iqm = lambda scores: np.array([metrics.aggregate_iqm(scores[..., frame])
                                 for frame in range(scores.shape[-1])])
         iqm_scores, iqm_cis = rly.get_interval_estimates(
@@ -98,7 +112,11 @@ class rliable_Analyzer():
             frames+1, iqm_scores, iqm_cis, algorithms=algorithms,
             xlabel=r'Generation',
             ylabel='IQM Normalized Score')
-        plt.show()
+        ax.legend()
+        ax.figure.set_size_inches(18.5, 10.5, forward=True)
+        ax.figure.set_tight_layout(True)
+        plt.savefig("efficiency_curve.png", dpi=150)
+        # plt.show()
         return ax 
         
     def plot_performance_profiles(self):
@@ -110,7 +128,11 @@ class rliable_Analyzer():
         # score matrices, each of which is of size `(num_runs x num_games)`.
         atari_200m_normalized_score_dict = self.score_matrix_dict
         # Human normalized score thresholds
-        atari_200m_thresholds = np.linspace(0.0, 8.0, 81)
+        ale_all_frames_scores_dict = self.score_matrix_all_gen_dict
+        #print("mes ale_score_simpe\n", self.score_matrix_dict)
+        # print('##################all gen \n',self.score_matrix_all_gen_dict)
+        number_generations = ale_all_frames_scores_dict[self.algorithms[0]][0,0,0]
+        atari_200m_thresholds = np.linspace(0.0,number_generations, 81)
         score_distributions, score_distributions_cis = rly.create_performance_profile(
         atari_200m_normalized_score_dict, atari_200m_thresholds)
         # Plot score distributions
@@ -121,6 +143,8 @@ class rliable_Analyzer():
         colors=dict(zip(self.algorithms, sns.color_palette('colorblind'))),
         xlabel=r'Human Normalized Score $(\tau)$',
         ax=ax)
-        print("ii")
-        plt.show()
-
+        fig.legend()
+        fig.set_size_inches(18.5, 10.5, forward=True)
+        fig.set_tight_layout(True)
+        plt.savefig("perf_profiles.png", dpi=150)
+        #plt.show()

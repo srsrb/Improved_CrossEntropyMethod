@@ -1,5 +1,6 @@
 import numpy as np
 import math
+
 def Sphere(ind):
     sum = 0
     for i in ind:

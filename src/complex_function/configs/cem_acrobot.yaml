@@ -1,0 +1,40 @@
+      save_best: True
+      plot_agents: True
+      verbose: True
+
+      logger:
+            classname: bbrl.utils.logger.TFLogger
+            log_dir: ./cem_logs/
+            verbose: False
+            every_n_seconds: 10
+
+      CEMi: True # False for Vanilla CEM | True for CEMi
+      make_plot : True  #true if you want to generate a plot for each run
+
+      algorithm:
+            seed: 42
+            nb_seeds: 1
+            sigma: 0.2
+            noise_multiplier: 0.999
+            pop_size: 50
+            elites_nb: 10
+            n_processes: 1
+            n_envs: 8
+            seuil_convergence: 100
+            delta_convergence: 5
+            eval_interval: 2000
+            nb_evals: 10
+            max_epochs: 30 #nombre maxi d'iterations
+            nb_runs : 4      
+            diag_covMatrix : False # True if you only want to use the diagonal of the cov matrix
+            name_version_cem: CEM
+            
+            architecture:
+                  actor_hidden_size: [2, 1]
+
+      gym_env:
+            classname: cem_actuel.make_gym_env
+            env_name: Acrobot-v1
+      optimizer:
+            classname: torch.optim.Adam
+            lr: 0.001
