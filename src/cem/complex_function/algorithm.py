@@ -258,7 +258,6 @@ def CEM_GEN(score_function, initial_matrices:  list[CovMatrix], ls_update_covari
                 all_weights[i].append(all_weights[i][-1])
             all_elites.append(all_elites[-1])
             all_elite_scores.append(all_elite_scores[-1])
-            print("j'ai convergé\n\n\n")
             continue
 
         # The params of policies at iteration t+1 are drawn according to a multivariate

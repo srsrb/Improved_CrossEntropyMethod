@@ -97,9 +97,8 @@ def plot_cem_on_function(f = score_function, force_CEM_version  = None,folder_pl
 
 	x_min, y_min = np.min(all_weights[:, :, 0]), np.min(all_weights[:, :, 1])
 	x_max, y_max = np.max(all_weights[:, :, 0]), np.max(all_weights[:, :, 1])
-	print(x_min, y_min, x_max, y_max)
-	x = np.linspace(x_min-1, x_max+1, num=200)
-	y = np.linspace(y_min-1, y_max+1, num=200)
+	x = np.linspace(-32, x_max+2, num=200)
+	y = np.linspace(-42, y_max+1, num=200)
 	X, Y = np.meshgrid(x, y)
 	Z = f([X, Y])
 	plt.figure(figsize=(12, 12))
@@ -209,9 +208,10 @@ def plot_CEM_every_algo_every_function( **kwargs):
 if __name__ == '__main__':
 	
 	kwargs  = {}
-	kwargs.update( force_CEM_version  = "CEMi",folder_plots="plots", folder_analysis="analysis",
+	kwargs.update( force_CEM_version  = "CEM",folder_plots="plots", folder_analysis="analysis",
 						 show_plot=False, show_analysis=False,
-						 show_points=True, show_ellipsoids=True, show_centroids=True)
+						 show_points=False, show_ellipsoids=False, show_centroids=True)
 	plot_CEM_every_algo_one_function(Sphere, **kwargs)
 	# plot_CEM_every_algo_one_function(mishra_bird, **kwargs)
 	# plot_CEM_every_algo_one_function(Griewank, **kwargs)
+	# plot_cem_on_function(f=Sphere, **kwargs)

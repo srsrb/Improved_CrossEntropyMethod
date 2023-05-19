@@ -8,7 +8,7 @@ centroids = {
     "Griewank": [2,2.5],
     "booth": [-10,-10],
     "Holder": [0,-5],
-    "mishra_bird": [0,6],
+    "mishra_bird": [0,-6],
     "distance": [0,-6]
     }
 
@@ -42,5 +42,5 @@ delta_convergence = {
 }
 
 
-ls_versions_CEM  = ['CEM', 'CEMi', 'CEMir','CEM+CEMi', 'CEM+CEMiR']
+ls_versions_CEM  = ['CEM', 'CEMir', 'CEM+CEMiR']
 version_CEM = ls_versions_CEM[2]
