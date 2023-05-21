@@ -6,7 +6,7 @@ The cross-entropy method is a Monte Carlo method for optimization. It is applica
 
 <img src="graphes/CEM_25G_starting_point-5_-5_.png" width="48%"/><img src="graphes/CEMi_25G_starting_point-5_-5_.png" width="49%"/>
 
-The left figure is a run of the usual cross-entropy method, that optimizes a cost function incrementally for a fixed size population. The color evolves from indigo to red as the cost improves, while the ellipses represents the succesive covariances matrices of each generation.
+The left figure is a run of the usual cross-entropy method, that optimizes a cost function incrementally for a fixed size population. The ellipses represents the succesive covariances matrices of each generation.
 
 In the right figure, we use the inverse of the covariance matrix instead. Our first observation is that the main axis of the ellipses are aligned with the progression of the population, and that the optimum is reached way faster than the usual cross-entropy method. 
 
