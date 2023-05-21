@@ -4,7 +4,7 @@ This project aims at implementing a variant of the Cross Entropy Method (CEM) an
 
 The cross-entropy method is a Monte Carlo method for optimization. It is applicable to both combinatorial and continuous problems, with either a static or noisy objective. It allows to find a vector of parameters that optimizes a cost function.
 
-<img src="images/CEM.png" width="48%"/><img src="images/CEMi.png" width="49%"/>
+<img src="graphes/CEM_25G_starting_point-5_-5_.png" width="48%"/><img src="graphes/CEMi_25G_starting_point-5_-5_.png" width="49%"/>
 
 The left figure is a run of the usual cross-entropy method, that optimizes a cost function incrementally for a fixed size population. The color evolves from indigo to red as the cost improves, while the ellipses represents the succesive covariances matrices of each generation.
 
